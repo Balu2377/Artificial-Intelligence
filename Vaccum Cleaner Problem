@@ -1,0 +1,72 @@
+class VacuumCleanerAgent:
+    def __init__(self, environment):
+        self.environment = environment
+        self.location = (0, 0)
+    
+    def move_left(self):
+        if self.location[1] > 0:
+            self.location = (self.location[0], self.location[1] - 1)
+    
+    def move_right(self):
+        if self.location[1] < self.environment.width - 1:
+            self.location = (self.location[0], self.location[1] + 1)
+    
+    def move_up(self):
+        if self.location[0] > 0:
+            self.location = (self.location[0] - 1, self.location[1])
+    
+    def move_down(self):
+        if self.location[0] < self.environment.height - 1:
+            self.location = (self.location[0] + 1, self.location[1])
+    
+    def clean(self):
+        self.environment.clean(self.location)
+
+class Environment:
+    def __init__(self, width, height, dirty_cells):
+        self.width = width
+        self.height = height
+        self.dirty_cells = dirty_cells
+        self.clean_cells = set()
+    
+    def is_dirty(self, location):
+        return location in self.dirty_cells
+    
+    def clean(self, location):
+        if location in self.dirty_cells:
+            self.dirty_cells.remove(location)
+            self.clean_cells.add(location)
+    
+    def is_fully_cleaned(self):
+        return len(self.dirty_cells) == 0
+
+def main():
+    width = 5
+    height = 5
+    dirty_cells = {(1, 2), (2, 4), (3, 0), (4, 1)}
+    
+    environment = Environment(width, height, dirty_cells)
+    agent = VacuumCleanerAgent(environment)
+    
+    while not environment.is_fully_cleaned():
+        print(f"Agent's current location: {agent.location}")
+        
+        if environment.is_dirty(agent.location):
+            print("Cleaning dirty cell...")
+            agent.clean()
+        
+        if agent.location[1] < width - 1:
+            agent.move_right()
+        elif agent.location[0] < height - 1:
+            agent.move_down()
+        elif agent.location[1] > 0:
+            agent.move_left()
+        else:
+            agent.move_up()
+        
+        print("Moving to the next cell...\n")
+    
+    print("All cells are clean!")
+
+if __name__ == "__main__":
+    main()
