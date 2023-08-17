@@ -1,0 +1,70 @@
+import heapq
+
+class Node:
+    def __init__(self, row, col, cost, heuristic):
+        self.row = row
+        self.col = col
+        self.cost = cost
+        self.heuristic = heuristic
+    
+    def __lt__(self, other):
+        return (self.cost + self.heuristic) < (other.cost + other.heuristic)
+
+def calculate_heuristic(current, target):
+    return abs(current.row - target.row) + abs(current.col - target.col)
+
+def astar(grid, start, target):
+    rows, cols = len(grid), len(grid[0])
+    open_set = []
+    heapq.heappush(open_set, start)
+    came_from = {}
+    g_score = {node: float('inf') for node in [Node(r, c, 0, 0) for r in range(rows) for c in range(cols)]}
+    g_score[start] = 0
+    f_score = {node: float('inf') for node in [Node(r, c, 0, 0) for r in range(rows) for c in range(cols)]}
+    f_score[start] = calculate_heuristic(start, target)
+    
+    while open_set:
+        current = heapq.heappop(open_set)
+        
+        if current.row == target.row and current.col == target.col:
+            path = []
+            while current in came_from:
+                path.append(current)
+                current = came_from[current]
+            path.append(start)
+            path.reverse()
+            return path
+        
+        for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            new_row, new_col = current.row + dr, current.col + dc
+            if 0 <= new_row < rows and 0 <= new_col < cols and grid[new_row][new_col] != 1:
+                neighbor = Node(new_row, new_col, g_score[current] + 1, calculate_heuristic(Node(new_row, new_col, 0, 0), target))
+                if neighbor.cost < g_score[neighbor]:
+                    came_from[neighbor] = current
+                    g_score[neighbor] = neighbor.cost
+                    f_score[neighbor] = neighbor.cost + calculate_heuristic(neighbor, target)
+                    heapq.heappush(open_set, neighbor)
+    
+    return None
+
+# Example grid with 0 for free cells and 1 for obstacles
+grid = [
+    [0, 0, 0, 0, 0],
+    [0, 1, 0, 1, 0],
+    [0, 0, 0, 0, 0],
+    [0, 1, 0, 1, 0],
+    [0, 0, 0, 0, 0]
+]
+
+start = Node(0, 0, 0, 0)
+target = Node(4, 4, 0, 0)
+
+path = astar(grid, start, target)
+
+if path:
+    print("Shortest path:")
+    for node in path:
+        print(f"({node.row}, {node.col})", end=" ")
+    print()
+else:
+    print("No path found.")
