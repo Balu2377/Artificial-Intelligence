@@ -1,0 +1,45 @@
+from z3 import *
+
+def solve_cryptarithmetic(puzzle):
+    # Extract unique characters from the puzzle
+    unique_chars = set(''.join(puzzle.split()))
+    
+    # Create a dictionary to hold the variables for each character
+    chars = {char: Int(char) for char in unique_chars}
+    
+    # Convert the puzzle into an equation
+    send = chars['S'] * 1000 + chars['E'] * 100 + chars['N'] * 10 + chars['D']
+    more = chars['M'] * 1000 + chars['O'] * 100 + chars['R'] * 10 + chars['E']
+    money = chars['M'] * 10000 + chars['O'] * 1000 + chars['N'] * 100 + chars['E'] * 10 + chars['Y']
+    
+    # Define constraints
+    constraints = [
+        send + more == money,
+        chars['S'] != 0,
+        chars['M'] != 0
+    ]
+    
+    # Create a solver
+    solver = Solver()
+    
+    # Add constraints to the solver
+    solver.add(constraints)
+    
+    # Check if the constraints can be satisfied
+    if solver.check() == sat:
+        model = solver.model()
+        solution = {char: model[chars[char]].as_long() for char in unique_chars}
+        return solution
+    
+    return None
+
+# Cryptarithmetic puzzle: SEND + MORE = MONEY
+puzzle = "SEND + MORE = MONEY"
+solution = solve_cryptarithmetic(puzzle)
+
+if solution:
+    print("Solution found:")
+    for char, value in solution.items():
+        print(f"{char}: {value}")
+else:
+    print("No solution found.")
